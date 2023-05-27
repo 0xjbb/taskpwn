@@ -12,7 +12,7 @@ This was created because sometimes you might find a bat script or exe running as
 
 ## Usage
 
-`python3 taskpwn example.local/Administrator:Passw0rd@10.10.10.5`
+`python3 taskpwn.py example.local/Administrator:Passw0rd@10.10.10.5`
 
 
 ## Bug?
