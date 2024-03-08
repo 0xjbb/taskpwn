@@ -47,6 +47,8 @@ class TSCH_ENUM:
         self.__kdcHost = kdcHost
         self.__kdcIP = dc_ip
         self.__dump = dump_creds
+        self.__exploit_cmd = ''
+        self.__exploit_relay = ''
 
         if hashes is not None:
             self.__lmhash, self.__nthash = hashes.split(':')
