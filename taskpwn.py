@@ -13,6 +13,9 @@ if __name__ == "__main__":
     parser.add_argument('-ts', action='store_true', help='adds timestamp to every logging output')
     parser.add_argument('--dump', action='store_true', help='Attempts to dump the creds of scheduled tasks')
 
+    parser.add_argument('--exploit-cmd', action='store', help='runs a command as the tasks user')
+    parser.add_argument('--exploit-relay', action='store', help='send HTTP creds to your kali')
+
     parser.add_argument('-debug', action='store_true', help='Turn DEBUG output ON')
     parser.add_argument('-codec', action='store', help='Sets encoding used (codec) from the target\'s output (default '
                                                        '"%s"). If errors are detected, run chcp.com at the target, '
