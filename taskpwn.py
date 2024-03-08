@@ -11,6 +11,7 @@ if __name__ == "__main__":
     parser.add_argument('target', action='store', help='<ip address or file or cidr')
     parser.add_argument('-la', action='store', help='local authentication')
     parser.add_argument('-ts', action='store_true', help='adds timestamp to every logging output')
+    parser.add_argument('--dump', action='store_true', help='Attempts to dump the creds of scheduled tasks')
 
     parser.add_argument('-debug', action='store_true', help='Turn DEBUG output ON')
     parser.add_argument('-codec', action='store', help='Sets encoding used (codec) from the target\'s output (default '
@@ -79,5 +80,5 @@ if __name__ == "__main__":
         if options.aesKey is not None:
             options.k = True
 
-        taskenum = TSCH_ENUM(username, password, domain, options.hashes, options.aesKey, options.k, options.dc_ip)
+        taskenum = TSCH_ENUM(username, password, domain, options.hashes, options.aesKey, options.k, options.dc_ip, options.dump)
         taskenum.run(address)

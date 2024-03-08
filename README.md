@@ -10,12 +10,33 @@ This was created because sometimes you might find a bat script or exe running as
 ## Requirements
 
 - impacket
+## Features 
+
+- Enumerate Single or Multiple hosts for Scheduled tasks remotely
+- Dump credentials for scheduled tasks
+- Remotely update task for exploitation (WIP)
 
 ## Usage
 
-`python3 taskpwn.py example.local/Administrator:Passw0rd@10.10.10.5`
+### Enum with Domain User on a Single Target
 
+`python3 taskpwn.py example.local/Administrator:Passw0rd 10.10.10.10`
+
+
+### Enum with Domain User on a Multiple Targets
+
+`python3 taskpwn.py example.local/Administrator:Passw0rd 10.10.10.0/24`
+
+
+### Enum with Local Admin on a Single Target
+
+`python3 taskpwn.py example.local/Administrator:Passw0rd 10.10.10.10`
+
+
+### Enum with Local Admin on a Multiple Targets
+
+`python3 taskpwn.py example.local/Administrator:Passw0rd 10.10.10.0/24`
 
 ## Bug?
 
-It will definitely have bugs because I'm not a great programmer, if you find one either create an issue or ideally fix it and PR.
+If you find one either create an issue or ideally fix it and PR.

@@ -36,7 +36,7 @@ CODEC = sys.stdout.encoding
 
 
 class TSCH_ENUM:
-    def __init__(self, username='', password='', domain='', hashes=None, aesKey=None, doKerberos=False, kdcHost=None, dc_ip=None):
+    def __init__(self, username='', password='', domain='', hashes=None, aesKey=None, doKerberos=False, kdcHost=None, dc_ip=None, dump_creds = False):
         self.__username = username
         self.__password = password
         self.__domain = domain
@@ -46,6 +46,7 @@ class TSCH_ENUM:
         self.__doKerberos = doKerberos
         self.__kdcHost = kdcHost
         self.__kdcIP = dc_ip
+        self.__dump = dump_creds
 
         if hashes is not None:
             self.__lmhash, self.__nthash = hashes.split(':')
@@ -57,7 +58,7 @@ class TSCH_ENUM:
         # Remove last ','
         self.baseDN = self.baseDN[:-1]
 
-    def play(self, addr):
+    def run(self, addr):
         stringbinding = r'ncacn_np:%s[\pipe\atsvc]' % addr
         rpctransport = transport.DCERPCTransportFactory(stringbinding)
 
@@ -67,7 +68,7 @@ class TSCH_ENUM:
                                          self.__aesKey)
             rpctransport.set_kerberos(self.__doKerberos, self.__kdcHost)
         try:
-            self.doStuff(rpctransport)
+            self.enum(rpctransport)
         except Exception as e:
             if logging.getLogger().level == logging.DEBUG:
                 import traceback
@@ -75,3 +76,50 @@ class TSCH_ENUM:
             logging.error(e)
             if str(e).find('STATUS_OBJECT_NAME_NOT_FOUND') >=0:
                 logging.info('When STATUS_OBJECT_NAME_NOT_FOUND is received, try running again. It might work')
+    def dump(self):
+        pass
+
+    def enum(self, rpctransport):
+        # Might not be pretty, but it do work.
+        dce = rpctransport.get_dce_rpc()
+
+        dce.set_credentials(*rpctransport.get_credentials())
+        if self.__doKerberos is True:
+            dce.set_auth_type(RPC_C_AUTHN_GSS_NEGOTIATE)
+        dce.connect()
+        dce.set_auth_level(RPC_C_AUTHN_LEVEL_PKT_PRIVACY)
+        dce.bind(tsch.MSRPC_UUID_TSCHS)
+
+        request = tsch.SchRpcEnumTasks()
+        request['path'] = '\\\x00'
+        request['flags'] = tsch.TASK_ENUM_HIDDEN
+        request['startIndex'] = 0
+        request['cRequested'] = 10
+        resp = dce.request(request)
+
+        self.display(resp)
+        if self.__dump is True:
+            self.dump()
+
+        self.__ldapConn.close()
+        dce.disconnect()
+
+    def display(self, resp):
+        def getXMLTag(s, split):# really lazy way of parsing xml
+            a = s.split("</%s>" % split)
+            return a[0].split("<%s>" % split)[1]
+
+        for x in resp['pNames']:
+            resp = tsch.hSchRpcRetrieveTask(dce, '\\%s' % x['Data'])
+            taskname = x['Data']
+            sid = getXMLTag(resp['pXml'], "UserId")
+
+            if sid.startswith("S-1-5-21"): # domain users.
+                cmd = getXMLTag(resp['pXml'], "Command")
+                print("[+] Target: %s" % self.__target)
+                print("[+] Taskname: %s" % taskname)
+                print("[+] Command: %s" % cmd)
+                # print("[+] Username: %s" % self.getUsernameFromSid(sid)['name'])
+                print("[+] User Groups:")
+                for x in self.getUsernameFromSid(sid)['group']:
+                    print('\t\t' + x)
